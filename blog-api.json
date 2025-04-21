@@ -1,0 +1,337 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Blog API",
+		"description": "Sample API for a blog with Permit.io authorization extensions",
+		"version": "1.0.0"
+	},
+	"servers": [
+		{
+			"url": "https://blog-api.example.com/v1"
+		}
+	],
+	"paths": {
+		"/posts": {
+			"x-permit-resource": "blog_post",
+			"get": {
+				"summary": "List all posts",
+				"operationId": "listPosts",
+				"x-permit-action": "list",
+				"x-permit-role": "viewer",
+				"responses": {
+					"200": {
+						"description": "A list of posts",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Post"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Create a new post",
+				"operationId": "createPost",
+				"x-permit-action": "create",
+				"x-permit-role": "editor",
+				"x-permit-resource-role": "post_creator",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Post"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Post created successfully"
+					}
+				}
+			}
+		},
+		"/posts/{postId}": {
+			"x-permit-resource": "blog_post",
+			"get": {
+				"summary": "Get a post by ID",
+				"operationId": "getPost",
+				"x-permit-action": "read",
+				"x-permit-role": "viewer",
+				"parameters": [
+					{
+						"name": "postId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "A post",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Post"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update a post",
+				"operationId": "updatePost",
+				"x-permit-action": "update",
+				"x-permit-role": "editor",
+				"parameters": [
+					{
+						"name": "postId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Post"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Post updated successfully"
+					}
+				}
+			},
+			"delete": {
+				"summary": "Delete a post",
+				"operationId": "deletePost",
+				"x-permit-action": "delete",
+				"x-permit-role": "admin",
+				"parameters": [
+					{
+						"name": "postId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Post deleted successfully"
+					}
+				}
+			}
+		},
+		"/posts/{postId}/comments": {
+			"x-permit-resource": "blog_comment",
+			"get": {
+				"summary": "Get comments for a post",
+				"operationId": "getPostComments",
+				"x-permit-action": "list",
+				"x-permit-role": "viewer",
+				"x-permit-relation": {
+					"subject_resource": "blog_comment",
+					"object_resource": "blog_post",
+					"key": "belongs_to_post",
+					"name": "Belongs To Post"
+				},
+				"parameters": [
+					{
+						"name": "postId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Comments for the post",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Comment"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Add a comment to a post",
+				"operationId": "addComment",
+				"x-permit-action": "create",
+				"x-permit-role": "commenter",
+				"x-permit-derived-role": {
+					"key": "post_commenter",
+					"name": "Post Commenter",
+					"base_role": "viewer",
+					"derived_role": "commenter"
+				},
+				"parameters": [
+					{
+						"name": "postId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Comment"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Comment added successfully"
+					}
+				}
+			}
+		},
+		"/users": {
+			"x-permit-resource": "blog_user",
+			"get": {
+				"summary": "List all users",
+				"operationId": "listUsers",
+				"x-permit-action": "list",
+				"x-permit-role": "admin",
+				"responses": {
+					"200": {
+						"description": "A list of users",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/User"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/{userId}": {
+			"x-permit-resource": "blog_user",
+			"get": {
+				"summary": "Get a user by ID",
+				"operationId": "getUser",
+				"x-permit-action": "read",
+				"x-permit-role": "viewer",
+				"parameters": [
+					{
+						"name": "userId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "A user",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"Post": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"authorId": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Comment": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"postId": {
+						"type": "string"
+					},
+					"content": {
+						"type": "string"
+					},
+					"authorId": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"User": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					}
+				}
+			}
+		}
+	}
+}
